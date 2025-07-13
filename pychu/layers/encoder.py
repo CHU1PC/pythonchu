@@ -4,21 +4,22 @@ from pychu.layers import Layer, TimeEmbedding, TimeLSTM
 
 
 class Encoder(Layer):
-    def __init__(self, num_embeddings, embedding_dim, hidden_size,
+    def __init__(self, input_size, embedding_dim, hidden_size,
                  num_layers=1, padding_idx=None):
         """Encoderで使われるレイヤーを初期化する
 
         Args:
             input_size (int): 入力言語の語句数(vocab_size)
             embedding_dim (int): 埋め込みベクトルの次元数
-            hidden_size (int): LSTMレイヤーの隠れ状態の次元数
+            hidden_size (int): LSTMレイヤーの隠れ層の次元数
             num_layers (int): LSTMレイヤーの層数. Defaults to 1.
+            padding_idx (int): paddingのindexを与える. Defaults to None
         """
         super().__init__()
         self.padding_idx = padding_idx
 
         # Embedding層
-        embed_W = np.random.randn(num_embeddings,
+        embed_W = np.random.randn(input_size,
                                   embedding_dim).astype(np.float32) * 0.01
         # 単語をテンソル化
         self.embed = TimeEmbedding(embed_W)
