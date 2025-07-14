@@ -33,6 +33,18 @@ def mean_squared_error(x0, x1):
 # SoftmaxCrossEntropy関数
 class SoftmaxCrossEntropy(Function):
     def forward(self, x, t):
+        """SoftmaxCrossEntropyのforward
+
+        Args:
+            x (ndarray or Variable): 予想値, shapeは(N, 特徴量数)
+            t (ndarray or Variable): 正解値, shapeは(N, )
+
+        Returns:
+            _type_: _description_
+
+        Notation:
+            N: バッチサイズ
+        """
         N = x.shape[0]
         log_z = utils.logsumexp(x, axis=1)
         log_p = x - log_z
@@ -41,6 +53,18 @@ class SoftmaxCrossEntropy(Function):
         return y
 
     def backward(self, gy):
+        """
+        Args:
+            gy (ndarray or Variable): スカラー値の勾配
+
+        Returns:
+            ndarray or Variable: 入力xに対する勾配, shapeは(x.shape)
+            ndarray or Variable: ターゲットtに対する勾配, shapeは(t.shape)
+
+        Notation:
+            N: バッチサイズ
+            x, t: 推論データと正解データ
+        """
         x, t = self.inputs
         N, CLS_NUM = x.shape
 
@@ -88,9 +112,9 @@ class TimeSoftmaxCrossEntropy(Function):
         x, t = self.inputs
         N, T, V = x.shape
 
-        grad = SoftmaxCrossEntropy().backward(gy)
-        gx = grad[0].reshape(N, T, V)
-        gt = grad[1].reshape(N, T)
+        gx, gy = SoftmaxCrossEntropy().backward(gy)
+        gx = gx.reshape(N, T, V)
+        gt = gy.reshape(N, T)
         return gx, gt
 
 
