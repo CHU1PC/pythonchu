@@ -53,8 +53,9 @@ class Decoder(Layer):
         """
         xs = self.embed(xs)
         hs = xs
+        if h0 is not None:
+            self.lstm_layers[0].lstm_cell.prev_hidden = h0
         for lstm in self.lstm_layers:
-            hs = lstm(hs, h0) if h0 is not None else lstm(hs)
-            h0 = None
+            hs = lstm(hs)
         out = self.fc(hs)
         return out
