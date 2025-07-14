@@ -27,7 +27,7 @@ class LSTM(Layer):
         self.h2i = Linear(HID, in_size=HID, nobias=True)
         self.h2o = Linear(HID, in_size=HID, nobias=True)
         self.h2u = Linear(HID, in_size=HID, nobias=True)
-        self.reset_state()
+        self.reset_state()  # reset_state()でprev_hiddenとprev_cellの初期化を行う
 
     def reset_state(self):
         # 今までの隠れ状態とセル状態を初期化する
@@ -83,7 +83,7 @@ class TimeLSTM(Layer):
         self.lstm_cell = LSTM(hidden_size, in_size)
         self.hidden_size = hidden_size
         self.stateful = stateful
-        self.reset_state()
+        self.reset_state()  # reset_state()でprev_hiddenとprev_cellを初期化する
 
     def reset_state(self):
         # 今までの隠れ状態とセル状態を初期化する

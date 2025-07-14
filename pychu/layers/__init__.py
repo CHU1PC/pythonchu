@@ -9,3 +9,7 @@ from .RNN import RNN, TimeRNN  # noqa
 from .LSTM import LSTM, TimeLSTM  # noqa
 
 from .Embedding import Embedding, TimeEmbedding  # noqa
+
+from .encoder import Encoder  # noqa
+
+from .decoder import Decoder  # noqa
