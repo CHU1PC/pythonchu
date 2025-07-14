@@ -5,6 +5,8 @@ import numpy as np
 
 import pychu
 
+from typing import Any
+
 """
 このファイルはVariableの演算子(+-*/%)などの設定
 variable変数が使えるメソッド(T, shape, size)などの設定を行う
@@ -27,7 +29,7 @@ class Config:
 #    (     )   <- ここがwith文が終わった後の処理
 
 @contextlib.contextmanager
-def using_config(name, value):
+def using_config(name: str, value: bool):
     old_value = getattr(Config, name)
     setattr(Config, name, value)
     try:
@@ -50,8 +52,8 @@ def test_mode():
 
 
 try:
-    import cupy
-    array_types = (np.ndarray, cupy.ndarray)
+    import cupy  # type: ignore
+    array_types: tuple[type, ...] = (np.ndarray, cupy.ndarray)  # type: ignore
 except ImportError:
     array_types = (np.ndarray)  # type: ignore
 
@@ -59,7 +61,7 @@ except ImportError:
 # =============================================================================
 # Variable / Function
 # =============================================================================
-def as_variable(obj):
+def as_variable(obj: np.ndarray):
     """Variableでないときに変換して返す
 
     Args:
@@ -73,7 +75,7 @@ def as_variable(obj):
     return Variable(obj)
 
 
-def as_array(x, array_module=np):
+def as_array(x: int | float | np.ndarray, array_module=np):
     if np.isscalar(x):
         return array_module.array(x)
     return x
@@ -170,26 +172,26 @@ class Variable:
 
     @property
     def shape(self):
-        return self.data.shape
+        return getattr(self.data, "shape", ())
 
     @property
     def size(self):
-        return self.data.size
+        return getattr(self.data, "size", 1)
 
     @property
     def ndim(self):
-        return self.data.ndim
+        return getattr(self.data, "ndim", 0)
 
     @property
     def dtype(self):
-        return self.data.dtype
+        return getattr(self.data, "dtype", type(self.data))
 
     def __getitem__(self, slices):
         import pychu.functions as F
         return F.get_item(self, slices)
 
     def __len__(self):
-        return len(self.data)
+        return getattr(self.data, "__len__", 1)
 
     def __repr__(self):
         """これはprint(x)などでVariableが呼ばれたときになんと返すかを決めれる処理"""
@@ -200,6 +202,15 @@ class Variable:
 
     def __neg__(self):
         return neg(self)
+
+    def __pow__(self, c):
+        return pow(self, c)
+
+    def __floordiv__(self, other):
+        return floordiv(self, other)
+
+    def __div__(self, other):
+        return div(self, other)
 
     def sum(self, axis=None, keepdims=False):
         import pychu.functions as F
@@ -254,8 +265,7 @@ class Function:
 
         return outputs if len(outputs) > 1 else outputs[0]
 
-    def forward(self, *xs):
-        # 子クラスでオーバライドされる
+    def forward(self, *args: Any, **kwargs: Any) -> Any:
         raise NotImplementedError()
 
     def backward(self, gy):
@@ -425,6 +435,8 @@ def setup_variable():
     Variable.__truediv__ = div  # type: ignore
     Variable.__rtruediv__ = rdiv  # type: ignore
     Variable.__pow__ = pow  # type: ignore
+    Variable.__div__ = div  # type: ignore
+    Variable.__floordiv__ = floordiv  # type: ignore
 
     Variable.matmul = pychu.functions.matmul  # type: ignore
     Variable.dot = pychu.functions.matmul  # type: ignore
