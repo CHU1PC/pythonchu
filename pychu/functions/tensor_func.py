@@ -1,4 +1,5 @@
 import numpy as np
+from typing import Any
 
 from pychu import cuda
 from pychu.core import Function, as_variable
@@ -107,7 +108,7 @@ class GetItem(Function):
     """
     get_itemで指定された配列の要素を返す
     """
-    def __init__(self, slices):
+    def __init__(self, slices: Any):
         self.slices = slices
 
     def forward(self, x):
@@ -139,6 +140,6 @@ class GetItemGrad(Function):
         return get_item(ggx, self.slices)
 
 
-def get_item(x, slices):
+def get_item(x, slices: Any):
     f = GetItem(slices)
     return f(x)
