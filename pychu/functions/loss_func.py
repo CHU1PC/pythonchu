@@ -55,3 +55,44 @@ class SoftmaxCrossEntropy(Function):
 
 def softmax_cross_entropy(x, t):
     return SoftmaxCrossEntropy()(x, t)
+
+
+# TimeSoftmaxCrossEntropy関数
+class TimeSoftmaxCrossEntropy(Function):
+    def forward(self, x, t):
+        """TimeSoftmaxCrossEntropyのforward
+
+        Args:
+            x (ndarray or Variable): 入力系列, shapeは(N, T, V)
+            t (ndarray or Variable): ターゲット系列, shapeは(N, T)
+
+        Returns:
+            SoftmaxCrossEntropyの出力, スカラー値
+
+        Notation:
+            N: バッチサイズ
+            T: シーケンス長
+            V: 語彙数(入力系列の次元数)
+        """
+        N, T, V = x.shape
+
+        # SoftmaxCrossEntropyの入力に合わせるためにreshape
+        # xは(N, T, V)でシーケンス長をバッチサイズにmultiplyして, あらゆる時刻における語句の確率分布を計算する
+        x = x.reshape(N * T, V)
+        t = t.reshape(N * T)
+
+        loss = SoftmaxCrossEntropy().forward(x, t)
+        return loss
+
+    def backward(self, gy):
+        x, t = self.inputs
+        N, T, V = x.shape
+
+        grad = SoftmaxCrossEntropy().backward(gy)
+        gx = grad[0].reshape(N, T, V)
+        gt = grad[1].reshape(N, T)
+        return gx, gt
+
+
+def time_softmax_cross_entropy(x, t):
+    return TimeSoftmaxCrossEntropy()(x, t)
