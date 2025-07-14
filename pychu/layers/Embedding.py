@@ -64,7 +64,7 @@ class TimeEmbedding(Layer):
 
         Notation:
             N: バッチサイズ(batch size)
-            T: 時刻数(number of time steps)
+            T: シーケンス長(number of time steps)
             D: 埋め込みベクトルの次元数(embedding vector dimension)  補足: 1時刻あたりの特徴量
             V: 語彙数(vocabulary size)
         """

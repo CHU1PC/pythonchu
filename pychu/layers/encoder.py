@@ -19,6 +19,7 @@ class Encoder(Layer):
         self.padding_idx = padding_idx
 
         # Embedding層
+        # embedding用の重みの初期化
         embed_W = np.random.randn(input_size,
                                   embedding_dim).astype(np.float32) * 0.01
         # 単語をテンソル化
