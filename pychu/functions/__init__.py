@@ -26,6 +26,7 @@ from .activation_func import Tanh, tanh  # noqa
 
 from .loss_func import MeanSquaredError, mean_squared_error  # noqa
 from .loss_func import SoftmaxCrossEntropy, softmax_cross_entropy  # noqa
+from .loss_func import TimeSoftmaxCrossEntropy, time_softmax_cross_entropy # noqa
 
 from .metrics_func import accuracy  # noqa
 
