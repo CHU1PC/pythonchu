@@ -41,15 +41,18 @@ class Encoder(Layer):
         return hs[:, -1, :]
 
     def forward(self, xs):
+        mask = None
+        if self.padding_idx is not None:
+            mask = (xs != self.padding_idx)
+
         # xs: (N, T)入力系列 -> それぞれの単語を(N, T, D), バッチサイズ, シーケンス長, Dは埋め込みベクトルの次元数
         xs = self.embed(xs)
 
-        # padding_idxが指定されていたらそれをゼロベクトルに
-        if self.padding_idx is not None:
-            mask = (xs != self.padding_idx)
+        if mask is not None:
             xs = xs * mask[:, :, None]
 
         hs = xs
         for lstm in self.lstm_layers:
             hs = lstm(hs)
+
         return hs
