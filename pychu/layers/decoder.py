@@ -45,7 +45,7 @@ class Decoder(Layer):
             h0 (_type_, optional): Encoderなどで得た隱れ状態. Defaults to None.
 
         Returns:
-            ndarray: 出力系列, shapeは(N, T, inpu_size)
+            ndarray: 出力系列, shapeは(N, T, input_size)
 
         Notation:
             N: バッチサイズ
