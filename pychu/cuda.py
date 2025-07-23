@@ -1,12 +1,25 @@
 import numpy as np
-gpu_enable = True
+
+xp_gpu = np
+gpu_backend = "cpu"
+gpu_enable = False
 try:
     import cupy as cp
-    cupy = cp
+    xp_gpu = cp
+    gpu_backend = "cupy"
+    gpu_enable = True
 except ImportError:
-    gpu_enable = False
+    try:
+        import mlx.core as mx
+        xp_gpu = mx
+        gpu_backend = "metal"
+        gpu_enable = True
+    except ImportError:
+        pass
 
 from pychu import Variable  # noqa
+
+print("-" * 50, "\n", gpu_backend, "\n", "-" * 50)
 
 
 def get_array_module(x):
@@ -21,10 +34,13 @@ def get_array_module(x):
     if isinstance(x, Variable):
         x = x.data
 
-    if not gpu_enable:
+    if gpu_backend == "cuda":
+        xp = cp.get_array_module(x)
+        return xp
+    elif gpu_backend == "metal":
+        return mx
+    else:
         return np
-    xp = cp.get_array_module(x)
-    return xp
 
 
 def as_numpy(x):
@@ -39,15 +55,15 @@ def as_numpy(x):
     if isinstance(x, Variable):
         x = x.data
 
-    if np.isscalar(x):
-        return np.array(x)
-    elif isinstance(x, np.ndarray):
-        return x
-    return cp.asnumpy(x)
+    if gpu_backend == "cuda":
+        return cp.asnumpy(x)
+    elif gpu_backend == "metal":
+        return x.to_numpy()
+    return np.asarray(x)
 
 
-def as_cupy(x):
-    """Cupy配列に変換する
+def as_gpu_array(x):
+    """任意の配列をGPU(Cupy / MLX)対応配列に変換する
 
     Args:
         x (Variable, ndarray(cupy or numpy)): input
@@ -61,7 +77,30 @@ def as_cupy(x):
     if isinstance(x, Variable):
         x = x.data
 
-    if not gpu_enable:
-        raise Exception("CuPy cannot be loaded. Install CuPy!")
+    return xp_gpu.asarray(x)
 
-    return cp.asarray(x)
+
+def canonical_dtype(dtype, xp):
+    if gpu_backend == "metal":
+        if isinstance(dtype, (np.dtype, cp.dtype if gpu_backend == "cuda"
+                              else np.dtype)):
+            dtype = str(dtype)
+        if isinstance(dtype, str):
+            dtype = getattr(xp, dtype)
+    return dtype
+
+
+def to_xp(arr, xp):
+    if isinstance(arr, Variable):
+        arr = arr.data
+    if xp is np:
+        return np.asarray(arr)
+
+    elif hasattr(xp, "asarray"):
+        return xp.asarrayn(arr)
+
+    elif hasattr(xp, "array"):
+        return xp.array(arr)
+
+    else:
+        return arr

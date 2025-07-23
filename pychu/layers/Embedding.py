@@ -70,9 +70,13 @@ class TimeEmbedding(Layer):
         """
         N, T = xs.shape
         V, D = self.W.shape
-        xp = cuda.get_array_module(xs)
+        xp = cuda.get_array_module(self.W.data)
         # Embedding層の出力である(N, D)をT回適応した形にする
-        out = xp.empty((N, T, D), dtype=self.W.dtype)
+        if cuda.gpu_backend == "metal":
+            dtype = cuda.canonical_dtype(self.W.dtype, xp)
+            out = xp.zeros((N, T, D), dtype=dtype)
+        else:
+            out = xp.zeros((N, T, D), dtype=self.W.dtype)
 
         for t in range(T):
             layer = Embedding(self.W)

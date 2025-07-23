@@ -43,7 +43,7 @@ class DataLoader:
         i, batchsize = self.iteration, self.batch_size
         batch_index = self.index[i * batchsize:(i + 1) * batchsize]
         batch = [self.dataset[i] for i in batch_index]
-        xp = cuda.cupy if self.gpu else np
+        xp = cuda.xp_gpu if self.gpu else np
         x = xp.array([example[0] for example in batch])
         t = xp.array([example[1] for example in batch])
 
@@ -81,7 +81,7 @@ class SeqDataLoader(DataLoader):
                        range(self.batch_size)]
         batch = [self.dataset[i] for i in batch_index]
 
-        xp = cuda.cupy if self.gpu else np
+        xp = cuda.xp_gpu if self.gpu else np
         x = xp.array([example[0] for example in batch])
         t = xp.array([example[1] for example in batch])
 

@@ -44,7 +44,7 @@ class Linear(Layer):
             xp (numpy or cupy): Defaults to np.
         """
         In, Out = self.in_size, self.out_size
-        W_data = xp.random.randn(In, Out).astype(self.dtype) * np.sqrt(1 / In)
+        W_data = F.randn((In, Out), xp=xp) * np.sqrt(1 / In)
         self.W.data = W_data
 
     def forward(self, x):

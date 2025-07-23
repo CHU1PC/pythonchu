@@ -107,10 +107,21 @@ class TimeLSTM(Layer):
         N, T, D = xs.shape
         hs = []
         xp = cuda.get_array_module(xs)
-        h = self.prev_hidden if self.stateful and self.prev_hidden is not None\
-            else xp.zeros((N, self.hidden_size), dtype=xs.dtype)
-        c = self.prev_cell if self.stateful and self.prev_cell is not None \
-            else xp.zeros((N, self.hidden_size), dtype=xs.dtype)
+        dtype = cuda.canonical_dtype(xs.dtype, xp)
+
+        if cuda.gpu_backend == "metal":
+            h = self.prev_hidden if self.stateful and self.prev_hidden is not None\
+                else xp.zeros((N, self.hidden_size), dtype=dtype)
+        else:
+            h = self.prev_hidden if self.stateful and self.prev_hidden is not None\
+                else xp.zeros((N, self.hidden_size), dtype=xs.dtype)
+        if cuda.gpu_backend == "metal":
+            c = self.prev_cell if self.stateful and self.prev_cell is not None\
+                else xp.zeros((N, self.hidden_size), dtype=dtype)
+        else:
+            c = self.prev_cell if self.stateful and self.prev_cell is not None\
+                else xp.zeros((N, self.hidden_size), dtype=xs.dtype)
+
         self.lstm_cell.prev_hidden = h
         self.lstm_cell.prev_cell = c
 

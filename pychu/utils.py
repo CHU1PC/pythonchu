@@ -5,6 +5,8 @@ import numpy as np
 import pychu
 import pychu.config
 
+from pychu import cuda
+
 
 def _dot_var(v, verbose=False):
     """v: 変数"""
@@ -117,9 +119,10 @@ def logsumexp(x, axis=1):
     """
     m = x.max(axis=axis, keepdims=True)
     y = x - m
-    np.exp(y, out=y)
+    xp = cuda.get_array_module(x)
+    y = xp.exp(y)
     s = y.sum(axis=axis, keepdims=True)
-    np.log(s, out=s)
+    s = xp.log(s)
     m += s
     return m
 

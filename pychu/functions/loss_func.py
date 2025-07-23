@@ -48,8 +48,11 @@ class SoftmaxCrossEntropy(Function):
         N = x.shape[0]
         log_z = utils.logsumexp(x, axis=1)
         log_p = x - log_z
-        log_p = log_p[np.arange(N), t.ravel()]
-        y = -log_p.sum() / np.float32(N)
+        xp = cuda.get_array_module(x)
+        t_xp = cuda.to_xp(t, xp).astype(xp.int64)
+        log_p = xp.take_along_axis(log_p, t_xp[:, None], axis=1).squeeze(1)
+        scalar_N = xp.array(N, dtype=xp.float32)
+        y = -log_p.sum() / scalar_N
         return y
 
     def backward(self, gy):

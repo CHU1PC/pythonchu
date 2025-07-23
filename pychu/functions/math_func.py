@@ -13,7 +13,9 @@ from pychu import cuda
 # matmul関数
 class MatMul(Function):
     def forward(self, x, W):
-        return x.dot(W)
+        W = cuda.as_gpu_array(W)
+        y = x.dot(W) if hasattr(x, "dot") else x @ W
+        return y
 
     def backward(self, gy):
         x, W = self.inputs
@@ -38,8 +40,12 @@ def matmul(x, W):
 # Linear関数
 class Linear(Function):
     def forward(self, x, W, b):
-        y = x.dot(W)
+        xp = cuda.get_array_module(x)
+        W = cuda.to_xp(W, xp)
+        y = x.dot(W) if hasattr(x, "dot") else x @ W
+
         if b is not None:
+            b = cuda.to_xp(b, xp)
             y += b
         return y
 

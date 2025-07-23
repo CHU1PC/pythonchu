@@ -46,21 +46,31 @@ def no_grad():
 def test_mode():
     return using_config("train", False)
 
+
 ###############################################################################
 # cupy
 ###############################################################################
 
 
-try:
-    import cupy  # type: ignore
-    array_types: tuple[type, ...] = (np.ndarray, cupy.ndarray)  # type: ignore
-except ImportError:
-    array_types = (np.ndarray)  # type: ignore
+array_types: tuple[type, ...] = (np.ndarray, )
 
+try:
+    import cupy as cp
+    array_types += (cp.ndarray, )
+except ImportError:
+    pass
+
+try:
+    import mlx.core as mx
+    array_types += (type(mx.array(0)), )
+except ImportError:
+    pass
 
 # =============================================================================
 # Variable / Function
 # =============================================================================
+
+
 def as_variable(obj: np.ndarray):
     """Variableでないときに変換して返す
 
@@ -222,7 +232,7 @@ class Variable:
 
     def to_gpu(self):
         if self.data is not None:
-            self.data = pychu.cuda.as_cupy(self.data)
+            self.data = pychu.cuda.as_gpu_array(self.data)
 
     def unchain(self):
         self.creator = None

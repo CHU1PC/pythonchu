@@ -96,9 +96,8 @@ def im2col_array(img, filter, stride, pad, to_matrix=True):
     OH = get_conv_outsize(H, FH, SH, PH)
     OW = get_conv_outsize(W, FW, SW, PW)
 
-    xp = cuda.get_array_module(img)
-    if xp != np:
-        col = _im2col_gpu(img, filter, stride, pad)
+    if cuda.gpu_backend == "cuda":
+        col = _im2col_cuda(img, filter, stride, pad)
     else:
         # paddingする
         img = np.pad(img,
@@ -128,7 +127,7 @@ def im2col_array(img, filter, stride, pad, to_matrix=True):
     return col
 
 
-def _im2col_gpu(img, filter, stride, pad):
+def _im2col_cuda(img, filter, stride, pad):
     N, C, H, W = img.shape
     FH, FW = pair(filter)
     SH, SW = pair(stride)
@@ -136,9 +135,9 @@ def _im2col_gpu(img, filter, stride, pad):
     OH = get_conv_outsize(H, FH, SH, PH)
     OW = get_conv_outsize(W, FW, SW, PW)
     dy, dx = 1, 1
-    col = cuda.cupy.empty((N, C, FH, FW, OH, OW), dtype=img.dtype)
+    col = cuda.xp_gpu.empty((N, C, FH, FW, OH, OW), dtype=img.dtype)
 
-    cuda.cupy.ElementwiseKernel(
+    cuda.xp_gpu.ElementwiseKernel(
         'raw T img, int32 H, int32 W, int32 OH, int32 OW,'
         'int32 FH, int32 FW, int32 SH, int32 SW, int32 PH, int32 PW,'
         'int32 dy, int32 dx',
@@ -244,9 +243,9 @@ def col2im_array(col, img_shape, filter, stride, pad, to_matrix=True):
         # to_matrixがFalseのときはもとから(N, C, FH, FW, OH, OW)
         # 元々の形である(N, C, FH, FW, OH, OW)に変える
         col = col.reshape(N, OH, OW, C, FH, FW).transpose(0, 3, 4, 5, 1, 2)
-    xp = cuda.get_array_module(col)
-    if xp != np:
-        img = _col2im_gpu(col, SH, SW, PH, PW, H, W)
+
+    if cuda.xp_gpu == "cuda":
+        img = _col2im_cuda(col, SH, SW, PH, PW, H, W)
         return img
     else:
         # colからimgに戻すときにもともと同じピクセルだったものが重複して出てきてそれを考慮するとこれだけ必要
@@ -267,12 +266,12 @@ def col2im_array(col, img_shape, filter, stride, pad, to_matrix=True):
         return img[:, :, PH:H + PH, PW:W + PW]
 
 
-def _col2im_gpu(col, SH, SW, PH, PW, H, W):
+def _col2im_cuda(col, SH, SW, PH, PW, H, W):
     N, C, FH, FW, OH, OW = col.shape
     dy, dx = 1, 1
-    img = cuda.cupy.empty((N, C, H, W), dtype=col.dtype)
+    img = cuda.xp_gpu.empty((N, C, H, W), dtype=col.dtype)
 
-    cuda.cupy.ElementwiseKernel(
+    cuda.xp_gpu.ElementwiseKernel(
         'raw T col, int32 H, int32 W, int32 OH, int32 OW,'
         'int32 FH, int32 FW, int32 SH, int32 SW, int32 PH, int32 PW,'
         'int32 dx, int32 dy',
