@@ -117,9 +117,10 @@ def logsumexp(x, axis=1):
     Returns:
         Variable: log( sum( exp(x)))を計算した値
     """
-    m = x.max(axis=axis, keepdims=True)
-    y = x - m
     xp = gpu.get_array_module(x)
+    x = xp.array(x)
+    m = xp.max(x, axis=axis, keepdims=True)
+    y = x - m
     y = xp.exp(y)
     s = y.sum(axis=axis, keepdims=True)
     s = xp.log(s)

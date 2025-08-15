@@ -43,10 +43,11 @@ class SoftmaxCrossEntropy(Function):
             N: バッチサイズ
         """
         xp = gpu.get_array_module(x)
-        t_xp = gpu.to_xp(t, xp).astype(xp.int64)
+        x = xp.array(x)
+        t_xp = xp.array(t).astype(xp.int64)
         N = x.shape[0]
-        log_z = utils.logsumexp(xp, axis=1)
-        log_p = xp - log_z
+        log_z = utils.logsumexp(x, axis=1)
+        log_p = x- log_z
 
         log_p = xp.take_along_axis(log_p, t_xp[:, None], axis=1).squeeze(1)
         scalar_N = xp.array(N, dtype=xp.float32)

@@ -77,7 +77,7 @@ def as_gpu_array(x):
     if isinstance(x, Variable):
         x = x.data
 
-    return xp_gpu.asarray(x)
+    return xp_gpu.array(x)
 
 
 def canonical_dtype(dtype, xp):

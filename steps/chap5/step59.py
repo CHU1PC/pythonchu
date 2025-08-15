@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 import pychu.datasets  # noqa
 import pychu  # noqa
-from pychu import Model  # noqa
+from pychu.models import Model  # noqa
 import pychu.functions as Func  # noqa
 import pychu.layers as Layer  # noqa
 import pychu.optimizers as optim  # noqa
