@@ -47,7 +47,7 @@ class SoftmaxCrossEntropy(Function):
         t_xp = xp.array(t).astype(xp.int64)
         N = x.shape[0]
         log_z = utils.logsumexp(x, axis=1)
-        log_p = x- log_z
+        log_p = x - log_z
 
         log_p = xp.take_along_axis(log_p, t_xp[:, None], axis=1).squeeze(1)
         scalar_N = xp.array(N, dtype=xp.float32)
@@ -70,11 +70,22 @@ class SoftmaxCrossEntropy(Function):
         x, t = self.inputs
         N, CLS_NUM = x.shape
 
-        gy *= 1/N
-        y = softmax(x)
-        # convert to one-hot
-        xp = gpu.get_array_module(t.data)
-        t_onehot = xp.eye(CLS_NUM, dtype=t.dtype)[t.data]
+        # gy はスカラー (Variable or ndarray) 想定
+        gy = gy / N
+
+        y = softmax(x)                     # shape (N, C), float32
+        xp = gpu.get_array_module(x)
+
+        # ラベルを int64 に (MLX の eye / インデックス用)
+        t_idx = t.data
+        if t_idx.dtype != xp.int64:
+            t_idx = t_idx.astype(xp.int64)
+
+        # one-hot を y と同じ浮動小数 dtype で生成
+        t_onehot = xp.zeros_like(y.data)
+        t_onehot[xp.arange(N), t_idx] = 1
+
+        # 勾配 (softmax - onehot) * gy
         y = (y - t_onehot) * gy
         return y
 

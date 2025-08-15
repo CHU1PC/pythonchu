@@ -53,7 +53,6 @@ for epoch in range(max_epoch):
         count += 1
 
         loss.backward()  # type: ignore
-        loss.unchain_backward()  # type: ignore
         optimizer.update()
     avg_loss = float(loss_sum) / count  # type: ignore
     print(f"| epoch {epoch + 1}| loss {avg_loss}")

@@ -162,7 +162,6 @@ class Adam(Optimizer):
         m = self.ms[key] = self.beta1 * self.ms[key] + (1.0 - self.beta1) * grad
         v = self.vs[key] = self.beta2 * self.vs[key] + (1.0 - self.beta2) * (grad * grad)
 
-        self.t += 1
         m_hat = m / (1.0 - self.beta1 ** self.t)
         v_hat = v / (1.0 - self.beta2 ** self.t)
 
