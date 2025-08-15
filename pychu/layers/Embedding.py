@@ -1,4 +1,4 @@
-from pychu import cuda
+from pychu import gpu
 from pychu.layers import Layer
 
 
@@ -35,7 +35,7 @@ class Embedding(Layer):
         Returns:
             _type_: _description_
         """
-        xp = cuda.get_array_module(dout)
+        xp = gpu.get_array_module(dout)
         dW = xp.zeros_like(self.W)
         # dWのidxの位置にdoutを足す
         xp.add.at(dW, self.idx, dout)  # type: ignore
@@ -70,10 +70,10 @@ class TimeEmbedding(Layer):
         """
         N, T = xs.shape
         V, D = self.W.shape
-        xp = cuda.get_array_module(self.W.data)
+        xp = gpu.get_array_module(self.W.data)
         # Embedding層の出力である(N, D)をT回適応した形にする
-        if cuda.gpu_backend == "metal":
-            dtype = cuda.canonical_dtype(self.W.dtype, xp)
+        if gpu.gpu_backend == "metal":
+            dtype = gpu.canonical_dtype(self.W.dtype, xp)
             out = xp.zeros((N, T, D), dtype=dtype)
         else:
             out = xp.zeros((N, T, D), dtype=self.W.dtype)
@@ -87,7 +87,7 @@ class TimeEmbedding(Layer):
     # 特殊な勾配処理が必要なためbackwardを実装
     def backward(self, dout):
         N, T, D = dout.shape
-        xp = cuda.get_array_module(dout)
+        xp = gpu.get_array_module(dout)
         grad = xp.zeros_like(self.W)
         for t in range(T):
             grad += self.layers[t].backward(dout[:, t, :])

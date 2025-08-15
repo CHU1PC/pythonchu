@@ -1,7 +1,7 @@
 # 全結合層
 import numpy as np
 import pychu.functions as F
-from pychu import cuda
+from pychu import gpu
 from pychu import as_variable
 from pychu.core import Parameter
 from pychu.layers import Layer
@@ -51,7 +51,7 @@ class Linear(Layer):
         # in_sizeがNoneでself.WがNoneで初期化されていた場合forwardが呼び出されるときに入力と同じサイズだけ作る
         if self.W.data is None:
             self.in_size = x.shape[1]
-            xp = cuda.get_array_module(x)
+            xp = gpu.get_array_module(x)
             self._init_W(xp)
 
         y = F.linear(x, self.W, self.b)

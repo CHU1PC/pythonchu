@@ -1,10 +1,7 @@
-import numpy as np
-
-
 from pychu import Function
 from pychu.functions import broadcast_to, softmax
 from pychu import utils
-from pychu import cuda
+from pychu import gpu
 
 ###############################################################################
 # 損失関数(loss function)
@@ -15,13 +12,13 @@ from pychu import cuda
 class MeanSquaredError(Function):
     def forward(self, x0, x1):
         diff = x0 - x1
-        return (diff**2).sum() / len(diff)
+        return (diff**2).sum() / int(diff.size)
 
     def backward(self, gy):
         x0, x1 = self.inputs
         diff = x0 - x1
         gy = broadcast_to(gy, diff.shape)
-        gx0 = gy * diff*(2. / len(diff))
+        gx0 = gy * diff*(2. / int(diff.size))
         gx1 = -gx0
         return gx0, gx1
 
@@ -45,11 +42,12 @@ class SoftmaxCrossEntropy(Function):
         Notation:
             N: バッチサイズ
         """
+        xp = gpu.get_array_module(x)
+        t_xp = gpu.to_xp(t, xp).astype(xp.int64)
         N = x.shape[0]
-        log_z = utils.logsumexp(x, axis=1)
-        log_p = x - log_z
-        xp = cuda.get_array_module(x)
-        t_xp = cuda.to_xp(t, xp).astype(xp.int64)
+        log_z = utils.logsumexp(xp, axis=1)
+        log_p = xp - log_z
+
         log_p = xp.take_along_axis(log_p, t_xp[:, None], axis=1).squeeze(1)
         scalar_N = xp.array(N, dtype=xp.float32)
         y = -log_p.sum() / scalar_N
@@ -74,7 +72,7 @@ class SoftmaxCrossEntropy(Function):
         gy *= 1/N
         y = softmax(x)
         # convert to one-hot
-        xp = cuda.get_array_module(t.data)
+        xp = gpu.get_array_module(t.data)
         t_onehot = xp.eye(CLS_NUM, dtype=t.dtype)[t.data]
         y = (y - t_onehot) * gy
         return y

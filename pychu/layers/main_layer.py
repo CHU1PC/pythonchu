@@ -1,7 +1,7 @@
 import os
 import weakref
 import numpy as np
-from pychu import cuda
+from pychu import gpu
 from pychu.core import Parameter
 
 
@@ -126,8 +126,11 @@ class Dropout(Layer):
 
     def forward(self, x):
         if self.training:
-            xp = cuda.get_array_module(x)
-            mask = xp.random.rand(*x.shape) > self.dropout_ratio
+            xp = gpu.get_array_module(x)
+            try:
+                mask = xp.random.rand(*x.shape) > self.dropout_ratio
+            except Exception:
+                mask = xp.random.uniform(0.0, 1.0, shape=x.shape)
             scale = xp.array(1.0 - self.dropout_ratio).astype(x.dtype)
             y = x * mask / scale
             return y
@@ -142,10 +145,13 @@ class TimeDropout(Layer):
 
     def forward(self, xs):
         if self.training:
-            xp = cuda.get_array_module(xs)
+            xp = gpu.get_array_module(xs)
             N, T, D = xs.shape
             # 各時系列ごとに同じmaskを使う
-            mask = xp.random.rand(N, 1, D) > self.dropout_ratio
+            try:
+                mask = xp.random.rand(N, 1, D) > self.dropout_ratio
+            except Exception:
+                mask = xp.random.uniform(0.0, 1.0, shape=(N, 1, D))
             scale = xp.array(1.0 - self.dropout_ratio).astype(xs.dtype)
             y = xs * mask / scale
             return y

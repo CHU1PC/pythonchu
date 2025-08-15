@@ -99,7 +99,7 @@ class Variable:
         if data is not None:
             if not isinstance(data, array_types):
                 print(f"{data} was {type(data)}. so changed to {array_types}")
-                xp = pychu.cuda.get_array_module(np.zeros(0))
+                xp = pychu.gpu.get_array_module(np.zeros(0))
                 data = as_array(data, array_module=xp)
 
         self.data = data
@@ -122,7 +122,7 @@ class Variable:
             # self.grad = np.ones_like(self.data)
             # こうすることで今までndarrayで作られていたものではなくつながりを持った計算になる
             # つながりがあればそれに対してもまたそいつが何によって作られたのかなどがわかる
-            xp = pychu.cuda.get_array_module(self.data)
+            xp = pychu.gpu.get_array_module(self.data)
             self.grad = Variable(xp.ones_like(self.data))
 
         funcs = []
@@ -228,11 +228,11 @@ class Variable:
 
     def to_cpu(self):
         if self.data is not None:
-            self.data = pychu.cuda.as_numpy(self.data)
+            self.data = pychu.gpu.as_numpy(self.data)
 
     def to_gpu(self):
         if self.data is not None:
-            self.data = pychu.cuda.as_gpu_array(self.data)
+            self.data = pychu.gpu.as_gpu_array(self.data)
 
     def unchain(self):
         self.creator = None
@@ -316,7 +316,7 @@ class Add(Function):
 
 
 def add(x0, x1):
-    x1 = as_array(x1, pychu.cuda.get_array_module(x0.data))
+    x1 = as_array(x1, pychu.gpu.get_array_module(x0.data))
     return Add()(x0, x1)
 
 
@@ -336,12 +336,12 @@ class Sub(Function):
 
 
 def sub(x0, x1):
-    x1 = as_array(x1, pychu.cuda.get_array_module(x0.data))
+    x1 = as_array(x1, pychu.gpu.get_array_module(x0.data))
     return Sub()(x0, x1)
 
 
 def rsub(x0, x1):
-    x1 = as_array(x1, pychu.cuda.get_array_module(x0.data))
+    x1 = as_array(x1, pychu.gpu.get_array_module(x0.data))
     return Sub()(x1, x0)
 
 
@@ -362,7 +362,7 @@ class Mul(Function):
 
 
 def mul(x0, x1):
-    x1 = as_array(x1, pychu.cuda.get_array_module(x0.data))
+    x1 = as_array(x1, pychu.gpu.get_array_module(x0.data))
     return Mul()(x0, x1)
 
 
@@ -382,12 +382,12 @@ class Div(Function):
 
 
 def div(x0, x1):
-    x1 = as_array(x1, pychu.cuda.get_array_module(x0.data))
+    x1 = as_array(x1, pychu.gpu.get_array_module(x0.data))
     return Div()(x0, x1)
 
 
 def rdiv(x0, x1):
-    x1 = as_array(x1, pychu.cuda.get_array_module(x0.data))
+    x1 = as_array(x1, pychu.gpu.get_array_module(x0.data))
     return Div()(x1, x0)
 
 

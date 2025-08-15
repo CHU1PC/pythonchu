@@ -5,7 +5,7 @@ import numpy as np
 import pychu
 import pychu.config
 
-from pychu import cuda
+from pychu import gpu
 
 
 def _dot_var(v, verbose=False):
@@ -119,7 +119,7 @@ def logsumexp(x, axis=1):
     """
     m = x.max(axis=axis, keepdims=True)
     y = x - m
-    xp = cuda.get_array_module(x)
+    xp = gpu.get_array_module(x)
     y = xp.exp(y)
     s = y.sum(axis=axis, keepdims=True)
     s = xp.log(s)

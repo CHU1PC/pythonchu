@@ -1,13 +1,13 @@
 import numpy as np
 
 from pychu import Function
-from pychu import cuda
+from pychu import gpu
 
 
 # tanh関数
 class Tanh(Function):
     def forward(self, x):
-        xp = cuda.get_array_module(x)
+        xp = gpu.get_array_module(x)
         return xp.tanh(x)
 
     def backward(self, gy):
@@ -24,7 +24,7 @@ def tanh(x):
 # sigmoid関数
 class Sigmoid(Function):
     def forward(self, x):
-        xp = cuda.get_array_module(x)
+        xp = gpu.get_array_module(x)
         y = xp.tanh(x * 0.5) * 0.5 + 0.5
         return y
 
@@ -44,7 +44,7 @@ class Softmax(Function):
         self.axis = axis
 
     def forward(self, x):
-        xp = cuda.get_array_module(x)
+        xp = gpu.get_array_module(x)
         y = x - x.max(axis=self.axis, keepdims=True)
         y = xp.exp(y)
         y /= y.sum(axis=self.axis, keepdims=True)

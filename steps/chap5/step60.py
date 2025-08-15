@@ -13,8 +13,8 @@ import pychu.optimizers as optim  # noqa
 import pychu.datasets  # noqa
 
 max_epoch = 100
-batch_size = 30
-hidden_size = 100
+batch_size = 64
+hidden_size = 10
 bptt_length = 30
 
 train_set = pychu.datasets.SinCurve(train=True)

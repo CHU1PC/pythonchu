@@ -1,6 +1,6 @@
 import math
 import numpy as np
-from pychu import cuda
+from pychu import gpu
 
 
 class Optimizer:
@@ -22,6 +22,9 @@ class Optimizer:
             f(params)
 
         for param in params:
+            xp = gpu.get_array_module(param.data)
+            param.data = gpu.to_xp(param, xp)
+            param.grad = gpu.to_xp(param, xp)
             self.update_one(param)
 
     def update_one(self, param):
@@ -81,7 +84,7 @@ class MomentumSGD(Optimizer):
         # idはアドレス(メモリ内での)を出力する
         v_key = id(param)
         if v_key not in self.vs:
-            xp = cuda.get_array_module(param.data)
+            xp = gpu.get_array_module(param.data)
             self.vs[v_key] = xp.zeros_like(param.data)
 
         v = self.vs[v_key]
@@ -103,7 +106,7 @@ class AdaGrad(Optimizer):
         self.hs = {}
 
     def update_one(self, param):
-        xp = cuda.get_array_module(param.data)
+        xp = gpu.get_array_module(param.data)
         h_key = id(param)
         if h_key not in self.hs:
             self.hs[h_key] = xp.zeros_like(param.data)
@@ -144,16 +147,23 @@ class Adam(Optimizer):
         return self.lr * math.sqrt(fix2) / fix1
 
     def update_one(self, param):
-        xp = cuda.get_array_module(param.data)
+        xp = gpu.get_array_module(param.data)
+
+        # ★ grad を安全に取り出す（Variableでも配列でもOK）
+        grad = getattr(param.grad, "data", param.grad)
+
+        # 以下は例: Adam の場合
         key = id(param)
         if key not in self.ms:
             self.ms[key] = xp.zeros_like(param.data)
+        if key not in self.vs:
             self.vs[key] = xp.zeros_like(param.data)
 
-        m, v = self.ms[key], self.vs[key]
-        beta1, beta2, eps = self.beta1, self.beta2, self.eps
-        grad = param.grad.data
+        m = self.ms[key] = self.beta1 * self.ms[key] + (1.0 - self.beta1) * grad
+        v = self.vs[key] = self.beta2 * self.vs[key] + (1.0 - self.beta2) * (grad * grad)
 
-        m += (1 - beta1) * (grad - m)
-        v += (1 - beta2) * (grad * grad - v)
-        param.data -= self.alpha * m / (xp.sqrt(v) + eps)
+        self.t += 1
+        m_hat = m / (1.0 - self.beta1 ** self.t)
+        v_hat = v / (1.0 - self.beta2 ** self.t)
+
+        param.data = param.data - self.lr * m_hat / (xp.sqrt(v_hat) + self.eps)

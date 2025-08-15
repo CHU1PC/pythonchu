@@ -1,5 +1,5 @@
 import pychu.functions as F
-from pychu import cuda
+from pychu import gpu
 from pychu.layers import Layer
 from pychu import as_variable
 from pychu.layers import Linear
@@ -106,16 +106,16 @@ class TimeLSTM(Layer):
         """
         N, T, D = xs.shape
         hs = []
-        xp = cuda.get_array_module(xs)
-        dtype = cuda.canonical_dtype(xs.dtype, xp)
+        xp = gpu.get_array_module(xs)
+        dtype = gpu.canonical_dtype(xs.dtype, xp)
 
-        if cuda.gpu_backend == "metal":
+        if gpu.gpu_backend == "metal":
             h = self.prev_hidden if self.stateful and self.prev_hidden is not None\
                 else xp.zeros((N, self.hidden_size), dtype=dtype)
         else:
             h = self.prev_hidden if self.stateful and self.prev_hidden is not None\
                 else xp.zeros((N, self.hidden_size), dtype=xs.dtype)
-        if cuda.gpu_backend == "metal":
+        if gpu.gpu_backend == "metal":
             c = self.prev_cell if self.stateful and self.prev_cell is not None\
                 else xp.zeros((N, self.hidden_size), dtype=dtype)
         else:

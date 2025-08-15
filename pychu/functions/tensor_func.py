@@ -1,7 +1,7 @@
 import numpy as np
 from typing import Any
 
-from pychu import cuda
+from pychu import gpu
 from pychu.core import Function, as_variable
 
 ###############################################################################
@@ -35,7 +35,7 @@ class BroadcastTo(Function):
 
     def forward(self, x):
         self.x_shape = x.shape
-        xp = cuda.get_array_module(x)
+        xp = gpu.get_array_module(x)
         return xp.broadcast_to(x, self.shape)
 
     def backward(self, gy):
@@ -63,7 +63,7 @@ class Stack(Function):
         self.axis = axis
 
     def forward(self, *xs):
-        xp = cuda.get_array_module(xs)
+        xp = gpu.get_array_module(xs)
         return xp.stack(xs, axis=self.axis)
 
     def backward(self, gy):
@@ -127,7 +127,7 @@ class GetItemGrad(Function):
         self.in_shape = in_shape
 
     def forward(self, gy):
-        xp = cuda.get_array_module(gy)
+        xp = gpu.get_array_module(gy)
         gx = xp.zeros(self.in_shape, dtype=gy.dtype)
 
         if xp is np:

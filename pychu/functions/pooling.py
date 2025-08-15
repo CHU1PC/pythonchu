@@ -3,7 +3,7 @@ import numpy as np
 from pychu.core import Function
 from pychu.utils import pair
 from pychu.functions import im2col_array, col2im_array
-from pychu import cuda
+from pychu import gpu
 
 
 class Pooling(Function):
@@ -45,7 +45,7 @@ class Pooling2DGrad(Function):
         self.indexes = mpool2d.indexes
 
     def forward(self, gy):
-        xp = cuda.get_array_module(gy)
+        xp = gpu.get_array_module(gy)
 
         # N: batch size
         # C: channel size

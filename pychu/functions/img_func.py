@@ -2,7 +2,7 @@ import numpy as np
 
 from pychu.core import Function
 from pychu.utils import pair, get_conv_outsize, get_deconv_outsize
-from pychu import cuda
+from pychu import gpu
 
 
 ###############################################################################
@@ -96,7 +96,7 @@ def im2col_array(img, filter, stride, pad, to_matrix=True):
     OH = get_conv_outsize(H, FH, SH, PH)
     OW = get_conv_outsize(W, FW, SW, PW)
 
-    if cuda.gpu_backend == "cuda":
+    if gpu.gpu_backend == "cuda":
         col = _im2col_cuda(img, filter, stride, pad)
     else:
         # paddingする
@@ -135,9 +135,9 @@ def _im2col_cuda(img, filter, stride, pad):
     OH = get_conv_outsize(H, FH, SH, PH)
     OW = get_conv_outsize(W, FW, SW, PW)
     dy, dx = 1, 1
-    col = cuda.xp_gpu.empty((N, C, FH, FW, OH, OW), dtype=img.dtype)
+    col = gpu.xp_gpu.empty((N, C, FH, FW, OH, OW), dtype=img.dtype)
 
-    cuda.xp_gpu.ElementwiseKernel(
+    gpu.xp_gpu.ElementwiseKernel(
         'raw T img, int32 H, int32 W, int32 OH, int32 OW,'
         'int32 FH, int32 FW, int32 SH, int32 SW, int32 PH, int32 PW,'
         'int32 dy, int32 dx',
@@ -244,7 +244,7 @@ def col2im_array(col, img_shape, filter, stride, pad, to_matrix=True):
         # 元々の形である(N, C, FH, FW, OH, OW)に変える
         col = col.reshape(N, OH, OW, C, FH, FW).transpose(0, 3, 4, 5, 1, 2)
 
-    if cuda.xp_gpu == "cuda":
+    if gpu.xp_gpu == "cuda":
         img = _col2im_cuda(col, SH, SW, PH, PW, H, W)
         return img
     else:
@@ -269,9 +269,9 @@ def col2im_array(col, img_shape, filter, stride, pad, to_matrix=True):
 def _col2im_cuda(col, SH, SW, PH, PW, H, W):
     N, C, FH, FW, OH, OW = col.shape
     dy, dx = 1, 1
-    img = cuda.xp_gpu.empty((N, C, H, W), dtype=col.dtype)
+    img = gpu.xp_gpu.empty((N, C, H, W), dtype=col.dtype)
 
-    cuda.xp_gpu.ElementwiseKernel(
+    gpu.xp_gpu.ElementwiseKernel(
         'raw T col, int32 H, int32 W, int32 OH, int32 OW,'
         'int32 FH, int32 FW, int32 SH, int32 SW, int32 PH, int32 PW,'
         'int32 dx, int32 dy',
@@ -330,7 +330,7 @@ class Conv2d(Function):
             FH: filter height
             FW: filter width
         """
-        xp = cuda.get_array_module(x)
+        xp = gpu.get_array_module(x)
 
         FH, FW = weight.shape[2:]
 
@@ -415,7 +415,7 @@ class Deconv2d(Function):
             OH: output height
             OW: output width
         """
-        xp = cuda.get_array_module(x)
+        xp = gpu.get_array_module(x)
 
         SH, SW = self.stride
         PH, PW = self.pad
@@ -496,7 +496,7 @@ class Conv2DGradW(Function):
         Returns:
             _type_: _description_
         """
-        xp = cuda.get_array_module(x)
+        xp = gpu.get_array_module(x)
 
         col = im2col_array(x, self.filter, self.stride,
                            self.pad, to_matrix=False)

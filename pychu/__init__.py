@@ -19,7 +19,7 @@ from . import optimizers  # type: ignore # noqa
 from . import functions  # type: ignore # noqa
 from . import layers  # type: ignore # noqa
 from . import utils  # type: ignore # noqa
-from . import cuda  # type: ignore # noqa
+from . import gpu  # type: ignore # noqa
 from . import transforms  # type: ignore # noqa
 from . import config # type: ignore # noqa
 
