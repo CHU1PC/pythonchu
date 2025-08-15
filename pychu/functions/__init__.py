@@ -1,5 +1,5 @@
-from .img_func import Im2col, im2col, im2col_array, _im2col_gpu  # noqa
-from .img_func import Col2im, col2im, col2im_array, _col2im_gpu  # noqa
+from .img_func import Im2col, im2col, im2col_array, _im2col_cuda  # noqa
+from .img_func import Col2im, col2im, col2im_array, _col2im_cuda  # noqa
 from .img_func import Conv2d, conv2d  # noqa
 from .img_func import Deconv2d, deconv2d, Conv2DGradW  # noqa
 
@@ -31,3 +31,5 @@ from .loss_func import TimeSoftmaxCrossEntropy, time_softmax_cross_entropy # noq
 from .metrics_func import accuracy  # noqa
 
 from .regularization import dropout  # noqa
+
+from .random import randn # noqa

@@ -5,6 +5,8 @@ import numpy as np
 
 import pychu
 
+from typing import Any
+
 """
 このファイルはVariableの演算子(+-*/%)などの設定
 variable変数が使えるメソッド(T, shape, size)などの設定を行う
@@ -27,7 +29,7 @@ class Config:
 #    (     )   <- ここがwith文が終わった後の処理
 
 @contextlib.contextmanager
-def using_config(name, value):
+def using_config(name: str, value: bool):
     old_value = getattr(Config, name)
     setattr(Config, name, value)
     try:
@@ -44,22 +46,32 @@ def no_grad():
 def test_mode():
     return using_config("train", False)
 
+
 ###############################################################################
 # cupy
 ###############################################################################
 
 
-try:
-    import cupy
-    array_types = (np.ndarray, cupy.ndarray)
-except ImportError:
-    array_types = (np.ndarray)  # type: ignore
+array_types: tuple[type, ...] = (np.ndarray, )
 
+try:
+    import cupy as cp
+    array_types += (cp.ndarray, )
+except ImportError:
+    pass
+
+try:
+    import mlx.core as mx
+    array_types += (type(mx.array(0)), )
+except ImportError:
+    pass
 
 # =============================================================================
 # Variable / Function
 # =============================================================================
-def as_variable(obj):
+
+
+def as_variable(obj: np.ndarray):
     """Variableでないときに変換して返す
 
     Args:
@@ -73,7 +85,7 @@ def as_variable(obj):
     return Variable(obj)
 
 
-def as_array(x, array_module=np):
+def as_array(x: int | float | np.ndarray, array_module=np):
     if np.isscalar(x):
         return array_module.array(x)
     return x
@@ -87,7 +99,7 @@ class Variable:
         if data is not None:
             if not isinstance(data, array_types):
                 print(f"{data} was {type(data)}. so changed to {array_types}")
-                xp = pychu.cuda.get_array_module(np.zeros(0))
+                xp = pychu.gpu.get_array_module(np.zeros(0))
                 data = as_array(data, array_module=xp)
 
         self.data = data
@@ -110,7 +122,7 @@ class Variable:
             # self.grad = np.ones_like(self.data)
             # こうすることで今までndarrayで作られていたものではなくつながりを持った計算になる
             # つながりがあればそれに対してもまたそいつが何によって作られたのかなどがわかる
-            xp = pychu.cuda.get_array_module(self.data)
+            xp = pychu.gpu.get_array_module(self.data)
             self.grad = Variable(xp.ones_like(self.data))
 
         funcs = []
@@ -170,26 +182,26 @@ class Variable:
 
     @property
     def shape(self):
-        return self.data.shape
+        return getattr(self.data, "shape", ())
 
     @property
     def size(self):
-        return self.data.size
+        return getattr(self.data, "size", 1)
 
     @property
     def ndim(self):
-        return self.data.ndim
+        return getattr(self.data, "ndim", 0)
 
     @property
     def dtype(self):
-        return self.data.dtype
+        return getattr(self.data, "dtype", type(self.data))
 
     def __getitem__(self, slices):
         import pychu.functions as F
         return F.get_item(self, slices)
 
     def __len__(self):
-        return len(self.data)
+        return getattr(self.data, "__len__", 1)
 
     def __repr__(self):
         """これはprint(x)などでVariableが呼ばれたときになんと返すかを決めれる処理"""
@@ -201,17 +213,26 @@ class Variable:
     def __neg__(self):
         return neg(self)
 
+    def __pow__(self, c):
+        return pow(self, c)
+
+    def __floordiv__(self, other):
+        return floordiv(self, other)
+
+    def __div__(self, other):
+        return div(self, other)
+
     def sum(self, axis=None, keepdims=False):
         import pychu.functions as F
         return F.sum(self, axis, keepdims)
 
     def to_cpu(self):
         if self.data is not None:
-            self.data = pychu.cuda.as_numpy(self.data)
+            self.data = pychu.gpu.as_numpy(self.data)
 
     def to_gpu(self):
         if self.data is not None:
-            self.data = pychu.cuda.as_cupy(self.data)
+            self.data = pychu.gpu.as_gpu_array(self.data)
 
     def unchain(self):
         self.creator = None
@@ -254,8 +275,7 @@ class Function:
 
         return outputs if len(outputs) > 1 else outputs[0]
 
-    def forward(self, *xs):
-        # 子クラスでオーバライドされる
+    def forward(self, *args: Any, **kwargs: Any) -> Any:
         raise NotImplementedError()
 
     def backward(self, gy):
@@ -296,7 +316,7 @@ class Add(Function):
 
 
 def add(x0, x1):
-    x1 = as_array(x1, pychu.cuda.get_array_module(x0.data))
+    x1 = as_array(x1, pychu.gpu.get_array_module(x0.data))
     return Add()(x0, x1)
 
 
@@ -316,12 +336,12 @@ class Sub(Function):
 
 
 def sub(x0, x1):
-    x1 = as_array(x1, pychu.cuda.get_array_module(x0.data))
+    x1 = as_array(x1, pychu.gpu.get_array_module(x0.data))
     return Sub()(x0, x1)
 
 
 def rsub(x0, x1):
-    x1 = as_array(x1, pychu.cuda.get_array_module(x0.data))
+    x1 = as_array(x1, pychu.gpu.get_array_module(x0.data))
     return Sub()(x1, x0)
 
 
@@ -342,7 +362,7 @@ class Mul(Function):
 
 
 def mul(x0, x1):
-    x1 = as_array(x1, pychu.cuda.get_array_module(x0.data))
+    x1 = as_array(x1, pychu.gpu.get_array_module(x0.data))
     return Mul()(x0, x1)
 
 
@@ -362,12 +382,12 @@ class Div(Function):
 
 
 def div(x0, x1):
-    x1 = as_array(x1, pychu.cuda.get_array_module(x0.data))
+    x1 = as_array(x1, pychu.gpu.get_array_module(x0.data))
     return Div()(x0, x1)
 
 
 def rdiv(x0, x1):
-    x1 = as_array(x1, pychu.cuda.get_array_module(x0.data))
+    x1 = as_array(x1, pychu.gpu.get_array_module(x0.data))
     return Div()(x1, x0)
 
 
@@ -425,6 +445,8 @@ def setup_variable():
     Variable.__truediv__ = div  # type: ignore
     Variable.__rtruediv__ = rdiv  # type: ignore
     Variable.__pow__ = pow  # type: ignore
+    Variable.__div__ = div  # type: ignore
+    Variable.__floordiv__ = floordiv  # type: ignore
 
     Variable.matmul = pychu.functions.matmul  # type: ignore
     Variable.dot = pychu.functions.matmul  # type: ignore

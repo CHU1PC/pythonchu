@@ -13,7 +13,7 @@ import pychu.optimizers as optim  # noqa
 import pychu.datasets  # noqa
 
 max_epoch = 100
-batch_size = 30
+batch_size = 64
 hidden_size = 100
 bptt_length = 30
 
@@ -46,16 +46,15 @@ for epoch in range(max_epoch):
     loss_sum, count = 0, 0
 
     for x, t in dataloader:
+        model.cleargrads()
         y = model(x)
         loss = F.mean_squared_error(y, t)
         loss_sum += float(loss.data)  # type: ignore
         count += 1
 
-        if count % bptt_length == 0 or count == seqlen:
-            model.cleargrads()
-            loss.backward()  # type: ignore
-            loss.unchain_backward()  # type: ignore
-            optimizer.update()
+        loss.backward()  # type: ignore
+        loss.unchain_backward()  # type: ignore
+        optimizer.update()
     avg_loss = float(loss_sum) / count  # type: ignore
     print(f"| epoch {epoch + 1}| loss {avg_loss}")
 

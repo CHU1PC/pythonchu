@@ -5,6 +5,8 @@ import numpy as np
 import pychu
 import pychu.config
 
+from pychu import gpu
+
 
 def _dot_var(v, verbose=False):
     """v: 変数"""
@@ -115,11 +117,13 @@ def logsumexp(x, axis=1):
     Returns:
         Variable: log( sum( exp(x)))を計算した値
     """
-    m = x.max(axis=axis, keepdims=True)
+    xp = gpu.get_array_module(x)
+    x = xp.array(x)
+    m = xp.max(x, axis=axis, keepdims=True)
     y = x - m
-    np.exp(y, out=y)
+    y = xp.exp(y)
     s = y.sum(axis=axis, keepdims=True)
-    np.log(s, out=s)
+    s = xp.log(s)
     m += s
     return m
 

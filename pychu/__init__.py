@@ -13,14 +13,14 @@ from pychu.datasets import Dataset  # type: ignore # noqa
 from pychu.dataloader import DataLoader  # type: ignore # noqa
 from pychu.dataloader import SeqDataLoader  # type: ignore # noqa
 
-import pychu.datasets  # type: ignore # noqa
-import pychu.dataloader  # type: ignore # noqa
-import pychu.optimizers  # type: ignore # noqa
-import pychu.functions  # type: ignore # noqa
-import pychu.layers  # type: ignore # noqa
-import pychu.utils  # type: ignore # noqa
-import pychu.cuda  # type: ignore # noqa
-import pychu.transforms  # type: ignore # noqa
-import pychu.config # type: ignore # noqa
+from . import datasets  # type: ignore # noqa
+from . import dataloader  # type: ignore # noqa
+from . import optimizers  # type: ignore # noqa
+from . import functions  # type: ignore # noqa
+from . import layers  # type: ignore # noqa
+from . import utils  # type: ignore # noqa
+from . import gpu  # type: ignore # noqa
+from . import transforms  # type: ignore # noqa
+from . import config # type: ignore # noqa
 
 setup_variable()

@@ -1,4 +1,4 @@
-from pychu import cuda
+from pychu import gpu
 from pychu import as_variable
 from pychu.layers import Layer
 from pychu.layers import Linear
@@ -70,7 +70,8 @@ class TimeRNN(Layer):
         """
         N, T, D = xs.shape
         hs = []
-        xp = cuda.get_array_module(xs)
+        xp = gpu.get_array_module(xs)
+        xs = xp.array(xs)
         # prev_hiddenが存在してstateful = Trueならばhを以前の隠れ状態とする
         h = self.prev_hidden if self.stateful and self.prev_hidden is not None\
             else xp.zeros((N, self.hidden_size), dtype=xs.dtype)

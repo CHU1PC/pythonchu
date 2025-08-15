@@ -1,7 +1,7 @@
 import numpy as np
 
 import pychu.functions as F
-from pychu import cuda
+from pychu import gpu
 from pychu.core import Parameter
 from pychu.layers import Layer
 from pychu.utils import pair
@@ -51,7 +51,7 @@ class Conv2d(Layer):
     def forward(self, x):
         if self.W.data is None:
             self.in_channels = x.shape[1]
-            xp = cuda.get_array_module(x)
+            xp = gpu.get_array_module(x)
             self._init_W(xp)
 
         y = F.conv2d(x, self.W, self.b, self.stride, self.pad)

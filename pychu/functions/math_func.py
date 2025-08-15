@@ -2,7 +2,7 @@ import numpy as np
 
 from pychu import Function
 from pychu.functions import sum_to, broadcast_to
-from pychu import cuda
+from pychu import gpu
 
 
 ###############################################################################
@@ -13,7 +13,11 @@ from pychu import cuda
 # matmul関数
 class MatMul(Function):
     def forward(self, x, W):
-        return x.dot(W)
+        xp = gpu.get_array_module(x)
+        x = gpu.to_xp(x, xp)
+        W = gpu.to_xp(W, xp)
+        y = x.dot(W) if hasattr(x, "dot") else x @ W
+        return y
 
     def backward(self, gy):
         x, W = self.inputs
@@ -38,8 +42,12 @@ def matmul(x, W):
 # Linear関数
 class Linear(Function):
     def forward(self, x, W, b):
-        y = x.dot(W)
+        xp = gpu.get_array_module(x)
+        W = gpu.to_xp(W, xp)
+        y = x.dot(W) if hasattr(x, "dot") else x @ W
+
         if b is not None:
+            b = gpu.to_xp(b, xp)
             y += b
         return y
 
@@ -58,7 +66,9 @@ def linear(x, W, b=None):
 # transpose関数
 class Transpose(Function):
     def forward(self, x):
-        return np.transpose(x)
+        xp = gpu.get_array_module(x)
+        x = xp.array(x)
+        return xp.transpose(x)
 
     def backward(self, gy):
         gx = transpose(gy)
@@ -91,7 +101,7 @@ def sum(x, axis=None, keepdims=False):
 # sin関数
 class Sin(Function):
     def forward(self, x):
-        xp = cuda.get_array_module(x)
+        xp = gpu.get_array_module(x)
         return xp.sin(x)
 
     def backward(self, gy):
@@ -106,7 +116,7 @@ def sin(x):
 # cos関数
 class Cos(Function):
     def forward(self, x):
-        xp = cuda.get_array_module(x)
+        xp = gpu.get_array_module(x)
         return xp.cos(x)
 
     def backward(self, gy):
@@ -121,7 +131,7 @@ def cos(x):
 # exp**x関数
 class Exp(Function):
     def forward(self, x):
-        xp = cuda.get_array_module(x)
+        xp = gpu.get_array_module(x)
         return xp.exp(x)
 
     def backward(self, gy):

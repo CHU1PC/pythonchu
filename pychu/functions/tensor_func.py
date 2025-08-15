@@ -1,6 +1,7 @@
 import numpy as np
+from typing import Any
 
-from pychu import cuda
+from pychu import gpu
 from pychu.core import Function, as_variable
 
 ###############################################################################
@@ -34,7 +35,7 @@ class BroadcastTo(Function):
 
     def forward(self, x):
         self.x_shape = x.shape
-        xp = cuda.get_array_module(x)
+        xp = gpu.get_array_module(x)
         return xp.broadcast_to(x, self.shape)
 
     def backward(self, gy):
@@ -62,7 +63,7 @@ class Stack(Function):
         self.axis = axis
 
     def forward(self, *xs):
-        xp = cuda.get_array_module(xs)
+        xp = gpu.get_array_module(xs)
         return xp.stack(xs, axis=self.axis)
 
     def backward(self, gy):
@@ -107,7 +108,7 @@ class GetItem(Function):
     """
     get_itemで指定された配列の要素を返す
     """
-    def __init__(self, slices):
+    def __init__(self, slices: Any):
         self.slices = slices
 
     def forward(self, x):
@@ -126,7 +127,7 @@ class GetItemGrad(Function):
         self.in_shape = in_shape
 
     def forward(self, gy):
-        xp = cuda.get_array_module(gy)
+        xp = gpu.get_array_module(gy)
         gx = xp.zeros(self.in_shape, dtype=gy.dtype)
 
         if xp is np:
@@ -139,6 +140,6 @@ class GetItemGrad(Function):
         return get_item(ggx, self.slices)
 
 
-def get_item(x, slices):
+def get_item(x, slices: Any):
     f = GetItem(slices)
     return f(x)

@@ -17,7 +17,7 @@ model = MLP((1000, 10))
 optim = optimizers.SGD().setup(model)
 
 
-if pychu.cuda.gpu_enable:
+if pychu.gpu.gpu_enable:
     train_loader.to_gpu()
     model.to_gpu()
 
