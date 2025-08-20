@@ -1,5 +1,5 @@
 from pychu import gpu
-from pychu import as_variable
+from pychu import as_tensor
 from pychu.layers import Layer
 from pychu.layers import Linear
 import pychu.functions as F
@@ -58,10 +58,10 @@ class TimeRNN(Layer):
         """RNNのforwardをT回分行う
 
         Args:
-            xs (Variable, ndarray): 入力(input), shapeは(N, T, D)
+            xs (Tensor, ndarray): 入力(input), shapeは(N, T, D)
 
         Returns:
-            hs(Variable, ndarray): 出力(output), shapeは(N, T, hidden_size)
+            hs(Tensor, ndarray): 出力(output), shapeは(N, T, hidden_size)
 
         Notation:
             N: バッチサイズ(batch size)
@@ -81,7 +81,7 @@ class TimeRNN(Layer):
             # hがあればそれをprev_hとしてRNNのほうに保存する
             # ここでrnnを以前の隠れ状態に加えて一回分適応したものがhとなる
             h = self.rnn_cell(x, h)
-            hs.append(as_variable(h))
+            hs.append(as_tensor(h))
 
         hs = F.stack(hs, axis=1)
 

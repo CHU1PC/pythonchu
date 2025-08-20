@@ -2,7 +2,7 @@
 import numpy as np
 import pychu.functions as F
 from pychu import gpu
-from pychu import as_variable
+from pychu import as_tensor
 from pychu.core import Parameter
 from pychu.layers import Layer
 
@@ -18,7 +18,7 @@ class Linear(Layer):
                            Defaults to False.
             dtype (_type_): Defaults to np.float32.
             in_size (int): Noneならば自動で入力のサイズをin_sizeとする. Defaults to None.
-            W (Variable, ndarray): NoneならばParameterで初期化を行う
+            W (Tensor, ndarray): NoneならばParameterで初期化を行う
         """
         super().__init__()
         self.in_size = in_size
@@ -26,7 +26,7 @@ class Linear(Layer):
         self.dtype = dtype
 
         if W is not None:
-            self.W = as_variable(W)
+            self.W = as_tensor(W)
         else:
             self.W = Parameter(None, name="W")
             if self.in_size is not None:
@@ -71,10 +71,10 @@ class TimeLinear(Layer):
         """LinearのforwardをT回分行う
 
         Args:
-            xs (Variable, ndarray): 入力(input), shapeは(N, T, D)
+            xs (Tensor, ndarray): 入力(input), shapeは(N, T, D)
 
         Returns:
-            ys(Variable, ndarray): 出力(output), shapeは(N, T, out_size)
+            ys(Tensor, ndarray): 出力(output), shapeは(N, T, out_size)
 
         Notation:
             N: バッチサイズ(batch size)

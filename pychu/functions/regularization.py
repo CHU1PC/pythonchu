@@ -1,10 +1,10 @@
 import pychu
-from pychu import as_variable
+from pychu import as_tensor
 from pychu import gpu
 
 
 def dropout(x, dropout_ratio=0.1):
-    x = as_variable(x)
+    x = as_tensor(x)
 
     if pychu.Config.train:
         xp = gpu.get_array_module(x)

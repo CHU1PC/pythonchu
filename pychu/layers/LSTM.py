@@ -1,7 +1,7 @@
 import pychu.functions as F
 from pychu import gpu
 from pychu.layers import Layer
-from pychu import as_variable
+from pychu import as_tensor
 from pychu.layers import Linear
 
 
@@ -94,10 +94,10 @@ class TimeLSTM(Layer):
         """LSTMのforwardをT回分行う
 
         Args:
-            xs (Variable, ndarray): 入力(input), shapeは(N, T, D)
+            xs (Tensor, ndarray): 入力(input), shapeは(N, T, D)
 
         Returns:
-            hs(Variable, ndarray): 出力(output), shapeは(N, T, hidden_size)
+            hs(Tensor, ndarray): 出力(output), shapeは(N, T, hidden_size)
 
         Notation:
             N: バッチサイズ(batch size)
@@ -129,7 +129,7 @@ class TimeLSTM(Layer):
             x = xs[:, t, :]
             h = self.lstm_cell(x)
             c = self.lstm_cell.prev_cell
-            hs.append(as_variable(h))
+            hs.append(as_tensor(h))
 
         hs = F.stack(hs, axis=1)
 

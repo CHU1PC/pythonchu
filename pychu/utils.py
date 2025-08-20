@@ -1,7 +1,6 @@
 import os
 import subprocess
 import urllib.request
-import numpy as np
 import pychu
 import pychu.config
 
@@ -10,7 +9,7 @@ from pychu import gpu
 
 def _dot_var(v, verbose=False):
     """v: 変数"""
-    # 変数用(variable)
+    # 変数用(Tensor)
     # 変数の色はorangeの丸
     dot_var = '{} [label="{}", color=orange, style=filled]\n'
 
@@ -111,11 +110,11 @@ def logsumexp(x, axis=1):
     """log( sum( exp(x)))を計算して返す
 
     Args:
-        x (Variable): 独立変数x
+        x (Tensor): 独立変数x
         axis (int): 和をとりたい方向, 0だと列方向, 1だと行方向, Defaults to 1.
 
     Returns:
-        Variable: log( sum( exp(x)))を計算した値
+        Tensor: log( sum( exp(x)))を計算した値
     """
     xp = gpu.get_array_module(x)
     x = xp.array(x)
@@ -132,7 +131,7 @@ def pair(x):
     """要素が1つの時にその唯一の要素を増やして(x, x)のように返す
 
     Args:
-        x (Variable, k): pairにしたい(もうすでにpair)変数
+        x (Tensor, k): pairにしたい(もうすでにpair)変数
 
     Raises:
         ValueError: xのsizeが1または2でないときにエラーをだす

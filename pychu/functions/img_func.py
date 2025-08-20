@@ -45,7 +45,7 @@ class Im2col(Function):
     def backward(self, gy):
         """
         Args:
-            gy (Variable, ndarray): colとして出力したもの
+            gy (Tensor, ndarray): colとして出力したもの
         forwardではim2colをしたためcol2imでimgに戻す
         """
         gx = col2im(gy, self.input_shape, self.filter, self.stride,
@@ -62,7 +62,7 @@ def im2col_array(img, filter, stride, pad, to_matrix=True):
     """フィルタによって画像からパッチを抽出する
 
     Args:
-        img (Variable, ndarray): 入力画像, shapeは(N, C, H, W)
+        img (Tensor, ndarray): 入力画像, shapeは(N, C, H, W)
         filter (int or (int, int)): フィルタのサイズ
         stride (int or (int, int)): ストライドのサイズ
         pad (int or (int, int)): パディングのサイズ
@@ -207,7 +207,7 @@ def col2im_array(col, img_shape, filter, stride, pad, to_matrix=True):
     """
 
     Args:
-        col (Variable, ndarray): 行列
+        col (Tensor, ndarray): 行列
         img_shape (int or (int, int)): 画像のshape
         filter (int or (int, int)): フィルタのサイズ
         stride (int or (int, int)): ストライドのサイズ
@@ -319,12 +319,12 @@ class Conv2d(Function):
         """_summary_
 
         Args:
-            x (Variable or ndarray): 入力画像, shapeは(N, C, H, W)
-            W (Variable or ndarray): 重み、すべてのフィルター, shapeは(OC, C, FH, FW)
-            b (Variable or ndarray): バイアス
+            x (Tensor or ndarray): 入力画像, shapeは(N, C, H, W)
+            W (Tensor or ndarray): 重み、すべてのフィルター, shapeは(OC, C, FH, FW)
+            b (Tensor or ndarray): バイアス
 
         Returns:
-            Variable or ndarray: 畳み込みをした4次元テンソル
+            Tensor or ndarray: 畳み込みをした4次元テンソル
 
         Notation:
             FH: filter height
@@ -350,7 +350,7 @@ class Conv2d(Function):
     def backward(self, gy):
         """
         Args:
-            gy (Variable or ndarray): forwardで返したyに対する損失関数の勾配(aL/ay)
+            gy (Tensor or ndarray): forwardで返したyに対する損失関数の勾配(aL/ay)
 
         Returns:
             _type_: _description_
@@ -393,12 +393,12 @@ class Deconv2d(Function):
         """Conv2dにおける(x)入力の勾配を求める
 
         Args:
-            x (Variable or ndarray): 畳み込みをされた特徴マップ
-            W (Variable or ndarray): 重さ
-            b (Variable or ndarray): バイアス
+            x (Tensor or ndarray): 畳み込みをされた特徴マップ
+            W (Tensor or ndarray): 重さ
+            b (Tensor or ndarray): バイアス
 
         Returns:
-            Variable or ndarray: 畳み込みをした元の画像サイズと同じ4次元テンソル
+            Tensor or ndarray: 畳み込みをした元の画像サイズと同じ4次元テンソル
 
         Notation:
             N: batch size
@@ -490,8 +490,8 @@ class Conv2DGradW(Function):
         """Conv2dにおける(weight)重さの勾配を求める
 
         Args:
-            x (Variable, ndarray): 入力画像, shapeは(N, C, H, W)
-            gy (Variable, ndarray): Conv2dで返した特徴マップ, shapeは(N, OC, OH, OW)
+            x (Tensor, ndarray): 入力画像, shapeは(N, C, H, W)
+            gy (Tensor, ndarray): Conv2dで返した特徴マップ, shapeは(N, OC, OH, OW)
 
         Returns:
             _type_: _description_

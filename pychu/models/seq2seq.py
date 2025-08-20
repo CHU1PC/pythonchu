@@ -19,8 +19,8 @@ class seq2seq(Model):
         """
 
         Args:
-            xs (ndarray or Variable): 入力系列(時系列データ)
-            ts (ndarray or Variable): ターゲット系列(時系列データ), xsに対する正解データ
+            xs (ndarray or Tensor): 入力系列(時系列データ)
+            ts (ndarray or Tensor): ターゲット系列(時系列データ), xsに対する正解データ
         """
         h = self.encoder.last_hidden(xs)
         score = self.decoder(ts, h)

@@ -149,7 +149,7 @@ class Adam(Optimizer):
     def update_one(self, param):
         xp = gpu.get_array_module(param.data)
 
-        # ★ grad を安全に取り出す（Variableでも配列でもOK）
+        # ★ grad を安全に取り出す（Tensorでも配列でもOK）
         grad = getattr(param.grad, "data", param.grad)
 
         # 以下は例: Adam の場合

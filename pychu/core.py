@@ -8,8 +8,8 @@ import pychu
 from typing import Any
 
 """
-このファイルはVariableの演算子(+-*/%)などの設定
-variable変数が使えるメソッド(T, shape, size)などの設定を行う
+このファイルはTensorの演算子(+-*/%)などの設定
+Tensor変数が使えるメソッド(T, shape, size)などの設定を行う
 """
 
 
@@ -38,8 +38,12 @@ def using_config(name: str, value: bool):
         setattr(Config, name, old_value)
 
 
+@contextlib.contextmanager
 def no_grad():
-    return using_config("enable_backprop", False)
+    try:
+        using_config("enable_backprop", False)
+    finally:
+        using_config("enable_backprop", True)
 
 
 # 一時的に推論モードに変える
@@ -67,22 +71,22 @@ except ImportError:
     pass
 
 # =============================================================================
-# Variable / Function
+# Tensor / Function
 # =============================================================================
 
 
-def as_variable(obj: np.ndarray):
-    """Variableでないときに変換して返す
+def as_tensor(obj: np.ndarray):
+    """Tensorでないときに変換して返す
 
     Args:
         obj (Any): 入力
 
     Returns:
-        Variable: Variableに返してから返す
+        Tensor: Tensorに返してから返す
     """
-    if isinstance(obj, Variable):
+    if isinstance(obj, Tensor):
         return obj
-    return Variable(obj)
+    return Tensor(obj)
 
 
 def as_array(x: int | float | np.ndarray, array_module=np):
@@ -91,7 +95,7 @@ def as_array(x: int | float | np.ndarray, array_module=np):
     return x
 
 
-class Variable:
+class Tensor:
     # これはnpなどのほかの変数と__array_priority__(標準では0.0)を比較して大きいほうの演算子を使う
     __array_priority__ = 1
 
@@ -99,8 +103,7 @@ class Variable:
         if data is not None:
             if not isinstance(data, array_types):
                 print(f"{data} was {type(data)}. so changed to {array_types}")
-                xp = pychu.gpu.get_array_module(np.zeros(0))
-                data = as_array(data, array_module=xp)
+                data = as_array(data, array_module=np)
 
         self.data = data
         self.grad = None
@@ -123,7 +126,7 @@ class Variable:
             # こうすることで今までndarrayで作られていたものではなくつながりを持った計算になる
             # つながりがあればそれに対してもまたそいつが何によって作られたのかなどがわかる
             xp = pychu.gpu.get_array_module(self.data)
-            self.grad = Variable(xp.ones_like(self.data))
+            self.grad = Tensor(xp.ones_like(self.data))
 
         funcs = []
         seen_set = set()
@@ -204,11 +207,11 @@ class Variable:
         return getattr(self.data, "__len__", 1)
 
     def __repr__(self):
-        """これはprint(x)などでVariableが呼ばれたときになんと返すかを決めれる処理"""
+        """これはprint(x)などでTensorが呼ばれたときになんと返すかを決めれる処理"""
         if self.data is None:
-            return "variable(None)"
+            return "tensor(None)"
         p = str(self.data).replace("\n", "\n" + " " * 9)
-        return "variable(" + p + ")"
+        return "tensor(" + p + ")"
 
     def __neg__(self):
         return neg(self)
@@ -254,7 +257,7 @@ class Function:
     # 例 f = Add()
     #    y = f(x0, x1) <-ここで呼ばれる
     def __call__(self, *inputs):
-        inputs = [as_variable(x) for x in inputs]  # type: ignore
+        inputs = [as_tensor(x) for x in inputs]  # type: ignore
 
         xs = [x.data for x in inputs]
 
@@ -263,7 +266,7 @@ class Function:
         if not isinstance(ys, tuple):
             ys = (ys, )
 
-        outputs = [Variable(as_array(y)) for y in ys]
+        outputs = [Tensor(as_array(y)) for y in ys]
 
         # Configクラスのenable_backpropを呼び出しているだけ
         if Config.enable_backprop:
@@ -434,25 +437,25 @@ def mod(x, c):
     return Mod()(x, c)
 
 
-def setup_variable():
-    Variable.__add__ = add  # type: ignore
-    Variable.__radd__ = add  # type: ignore
-    Variable.__mul__ = mul  # type: ignore
-    Variable.__rmul__ = mul  # type: ignore
-    Variable.__neg__ = neg  # type: ignore
-    Variable.__sub__ = sub  # type: ignore
-    Variable.__rsub__ = rsub  # type: ignore
-    Variable.__truediv__ = div  # type: ignore
-    Variable.__rtruediv__ = rdiv  # type: ignore
-    Variable.__pow__ = pow  # type: ignore
-    Variable.__div__ = div  # type: ignore
-    Variable.__floordiv__ = floordiv  # type: ignore
+def setup_tensor():
+    Tensor.__add__ = add  # type: ignore
+    Tensor.__radd__ = add  # type: ignore
+    Tensor.__mul__ = mul  # type: ignore
+    Tensor.__rmul__ = mul  # type: ignore
+    Tensor.__neg__ = neg  # type: ignore
+    Tensor.__sub__ = sub  # type: ignore
+    Tensor.__rsub__ = rsub  # type: ignore
+    Tensor.__truediv__ = div  # type: ignore
+    Tensor.__rtruediv__ = rdiv  # type: ignore
+    Tensor.__pow__ = pow  # type: ignore
+    Tensor.__div__ = div  # type: ignore
+    Tensor.__floordiv__ = floordiv  # type: ignore
 
-    Variable.matmul = pychu.functions.matmul  # type: ignore
-    Variable.dot = pychu.functions.matmul  # type: ignore
+    Tensor.matmul = pychu.functions.matmul  # type: ignore
+    Tensor.dot = pychu.functions.matmul  # type: ignore
 
 
 ###############################################################################
 
-class Parameter(Variable):
+class Parameter(Tensor):
     pass

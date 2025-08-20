@@ -6,7 +6,7 @@ from pychu import gpu
 
 
 ###############################################################################
-# Variable用の数学関数(math function for Variable)
+# Tensor用の数学関数(math function for Tensor)
 ###############################################################################
 
 
@@ -30,11 +30,11 @@ def matmul(x, W):
     """行列積を計算するもの
 
     Args:
-        x (Variable, ndarray): テンソル
-        W (Variable, ndarray): x・WのW
+        x (Tensor, ndarray): テンソル
+        W (Tensor, ndarray): x・WのW
 
     Returns:
-        Variable : 行列積をした後の行列を返す
+        Tensor : 行列積をした後の行列を返す
     """
     return MatMul()(x, W)
 

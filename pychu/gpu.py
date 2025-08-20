@@ -17,7 +17,7 @@ except ImportError:
     except ImportError:
         pass
 
-from pychu import Variable  # noqa
+from pychu import Tensor  # noqa
 
 print("-" * 50, "\n", gpu_backend, "\n", "-" * 50)
 
@@ -26,12 +26,12 @@ def get_array_module(x):
     """xがnumpyかcupyかを返す
 
     Args:
-        x (Variable, ndarray(cupy or numpy)): input
+        x (Tensor, ndarray(cupy or numpy)): input
 
     Returns:
         xp (module): numpy or cupy module
     """
-    if isinstance(x, Variable):
+    if isinstance(x, Tensor):
         x = x.data
 
     if gpu_backend == "cuda":
@@ -47,12 +47,12 @@ def as_numpy(x):
     """Numpy配列に変換する
 
     Args:
-        x (Variable, ndarray(cupy or numpy)): input
+        x (Tensor, ndarray(cupy or numpy)): input
 
     Returns:
         np.ndarray: Numpy配列
     """
-    if isinstance(x, Variable):
+    if isinstance(x, Tensor):
         x = x.data
 
     if gpu_backend == "cuda":
@@ -66,7 +66,7 @@ def as_gpu_array(x):
     """任意の配列をGPU(Cupy / MLX)対応配列に変換する
 
     Args:
-        x (Variable, ndarray(cupy or numpy)): input
+        x (Tensor, ndarray(cupy or numpy)): input
 
     Raises:
         Exception: CuPyがインストールされていない場合
@@ -74,7 +74,7 @@ def as_gpu_array(x):
     Returns:
         cupy.ndarray: CuPy配列
     """
-    if isinstance(x, Variable):
+    if isinstance(x, Tensor):
         x = x.data
 
     return xp_gpu.array(x)
@@ -91,7 +91,7 @@ def canonical_dtype(dtype, xp):
 
 
 def to_xp(arr, xp):
-    if isinstance(arr, Variable):
+    if isinstance(arr, Tensor):
         arr = arr.data
     if xp is np:
         return np.asarray(arr)

@@ -33,8 +33,8 @@ class SoftmaxCrossEntropy(Function):
         """SoftmaxCrossEntropyのforward
 
         Args:
-            x (ndarray or Variable): 予想値, shapeは(N, 特徴量数)
-            t (ndarray or Variable): 正解値, shapeは(N, )
+            x (ndarray or Tensor): 予想値, shapeは(N, 特徴量数)
+            t (ndarray or Tensor): 正解値, shapeは(N, )
 
         Returns:
             _type_: _description_
@@ -57,11 +57,11 @@ class SoftmaxCrossEntropy(Function):
     def backward(self, gy):
         """
         Args:
-            gy (ndarray or Variable): スカラー値の勾配
+            gy (ndarray or Tensor): スカラー値の勾配
 
         Returns:
-            ndarray or Variable: 入力xに対する勾配, shapeは(x.shape)
-            ndarray or Variable: ターゲットtに対する勾配, shapeは(t.shape)
+            ndarray or Tensor: 入力xに対する勾配, shapeは(x.shape)
+            ndarray or Tensor: ターゲットtに対する勾配, shapeは(t.shape)
 
         Notation:
             N: バッチサイズ
@@ -70,7 +70,7 @@ class SoftmaxCrossEntropy(Function):
         x, t = self.inputs
         N, CLS_NUM = x.shape
 
-        # gy はスカラー (Variable or ndarray) 想定
+        # gy はスカラー (Tensor or ndarray) 想定
         gy = gy / N
 
         y = softmax(x)                     # shape (N, C), float32
@@ -100,8 +100,8 @@ class TimeSoftmaxCrossEntropy(Function):
         """TimeSoftmaxCrossEntropyのforward
 
         Args:
-            x (ndarray or Variable): 入力系列, shapeは(N, T, V)
-            t (ndarray or Variable): ターゲット系列, shapeは(N, T)
+            x (ndarray or Tensor): 入力系列, shapeは(N, T, V)
+            t (ndarray or Tensor): ターゲット系列, shapeは(N, T)
 
         Returns:
             SoftmaxCrossEntropyの出力, スカラー値

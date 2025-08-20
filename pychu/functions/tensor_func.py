@@ -2,7 +2,7 @@ import numpy as np
 from typing import Any
 
 from pychu import gpu
-from pychu.core import Function, as_variable
+from pychu.core import Function, as_tensor
 
 ###############################################################################
 # tensor用関数(tensor function)
@@ -24,7 +24,7 @@ class Reshape(Function):
 
 def reshape(x, shape):
     if x.shape == shape:
-        return as_variable(x)
+        return as_tensor(x)
     return Reshape(shape)(x)
 
 
@@ -47,14 +47,14 @@ def broadcast_to(x, shape):
     """xをしたいshapeに拡張する
 
     Args:
-        x (Variable, ndarray): 変換したいndarray入力
+        x (Tensor, ndarray): 変換したいndarray入力
         shape (tuple, list): 変換したい形(行列)
 
     Returns:
-        Variable: 変換した後のVariableを返す
+        Tensor: 変換した後のTensorを返す
     """
     if x.shape == shape:
-        return as_variable(x)
+        return as_tensor(x)
     return BroadcastTo(shape)(x)
 
 
@@ -72,9 +72,9 @@ class Stack(Function):
 
 
 def stack(xs, axis=0):
-    xs = [as_variable(x) for x in xs]
+    xs = [as_tensor(x) for x in xs]
     datas = [x.data for x in xs]
-    return as_variable(Stack(axis)(*datas))
+    return as_tensor(Stack(axis)(*datas))
 
 
 # sumto関数
@@ -92,14 +92,14 @@ def sum_to(x, shape):
     """xを指定したshapeになるように和をとって変形させる
 
     Args:
-        x(Variable, ndarray): ndarrayの入力
+        x(Tensor, ndarray): ndarrayの入力
         shape(tuple, list): 変換したい形(行列)
 
     Returns:
-        Variable: 変換したあとのVariableを返す
+        Tensor: 変換したあとのTensorを返す
     """
     if x.shape == shape:
-        return as_variable(x)
+        return as_tensor(x)
     return SumTo(shape)(x)
 
 

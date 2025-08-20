@@ -41,7 +41,7 @@ class Decoder(Layer):
         """
 
         Args:
-            xs (ndarray or Variable): 入力系列(時系列データ), shapeは(N, T)
+            xs (ndarray or Tensor): 入力系列(時系列データ), shapeは(N, T)
             h0 (_type_, optional): Encoderなどで得た隱れ状態. Defaults to None.
 
         Returns:

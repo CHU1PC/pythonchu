@@ -7,7 +7,7 @@ class Embedding(Layer):
         """Embedding層の初期化
 
         Args:
-            W (Variable or ndarray): 埋め込み行列, shapeは(V, D)でVは語彙数, Dは埋め込みベクトルの次元数
+            W (Tensor or ndarray): 埋め込み行列, shapeは(V, D)でVは語彙数, Dは埋め込みベクトルの次元数
         """
         super().__init__()
         self.W = W
@@ -17,10 +17,10 @@ class Embedding(Layer):
         """ idxに対応する埋め込みベクトルを返す
 
         Args:
-            idx (number.Number or list, ndarray, Variable):
+            idx (number.Number or list, ndarray, Tensor):
                 埋め込みベクトルを取得したいインデックス, shapeは(N, )でNはバッチサイズ
         Returns:
-            Variable or ndarray: 埋め込みベクトル, shapeは(N, D)
+            Tensor or ndarray: 埋め込みベクトル, shapeは(N, D)
         """
         self.idx = idx
         return self.W[idx]
@@ -29,7 +29,7 @@ class Embedding(Layer):
         """ 勾配を計算する
 
         Args:
-            dout (Variable or ndarray):
+            dout (Tensor or ndarray):
                 埋め込みベクトルに対する勾配, shapeは(N, D)でNはバッチサイズ, Dは埋め込みベクトルの次元数
 
         Returns:
@@ -47,7 +47,7 @@ class TimeEmbedding(Layer):
         """ TimeEmbedding層の初期化
 
         Args:
-            W (Variable or ndarray): 埋め込み行列, shapeは(V, D)でVは語彙数, Dは埋め込みベクトルの次元数
+            W (Tensor or ndarray): 埋め込み行列, shapeは(V, D)でVは語彙数, Dは埋め込みベクトルの次元数
         """
         super().__init__()
         self.W = W
@@ -57,10 +57,10 @@ class TimeEmbedding(Layer):
         """ Embedding層のforwardをT回分行う
 
         Args:
-            xs (Variable, ndarray): 入力(input), shapeは(N, T)でNはバッチサイズ, Tは時刻数
+            xs (Tensor, ndarray): 入力(input), shapeは(N, T)でNはバッチサイズ, Tは時刻数
 
         Returns:
-            out (Variable, ndarray): 出力(output), shapeは(N, T, D)でDは埋め込みベクトルの次元数
+            out (Tensor, ndarray): 出力(output), shapeは(N, T, D)でDは埋め込みベクトルの次元数
 
         Notation:
             N: バッチサイズ(batch size)
